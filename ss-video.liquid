@@ -1473,6 +1473,18 @@ function initvideolider4() {
     videoElement.addEventListener('ended', showPoster);
   };
 
+  const markIframePlaying = (iframeEl, isPlaying) => {
+    if (!iframeEl) return;
+    iframeEl.dataset.playing = isPlaying ? 'true' : 'false';
+  };
+
+  const isVideoPlaying = (videoEl) => {
+    if (!videoEl) return false;
+    return videoEl.currentTime > 0 && !videoEl.paused && !videoEl.ended;
+  };
+
+  const isIframePlaying = (iframeEl) => iframeEl?.dataset.playing === 'true';
+
   const pauseSlideMedia = (slide) => {
     if (!slide) return;
     const slideVideo = slide.querySelector('video');
@@ -1487,6 +1499,7 @@ function initvideolider4() {
 
     if (slideIframe) {
       resetIframePlayback(slideIframe, slideIframe.getAttribute('data-src1'), slideWrapper);
+      markIframePlaying(slideIframe, false);
     }
 
     if (slideButton) {
@@ -1498,7 +1511,11 @@ function initvideolider4() {
 
   const stopOtherMedia = (currentSlide) => {
     getSlides().forEach((otherSlide) => {
-      if (otherSlide !== currentSlide) {
+      if (otherSlide === currentSlide) return;
+
+      const otherVideo = otherSlide.querySelector('video');
+      const otherIframe = otherSlide.querySelector('iframe');
+      if (isVideoPlaying(otherVideo) || isIframePlaying(otherIframe)) {
         pauseSlideMedia(otherSlide);
       }
     });
@@ -1514,8 +1531,12 @@ function initvideolider4() {
         { once: true }
       );
       iframeElement.src = targetSrc;
-    } else if (wrapper) {
-      setPosterVisibility(wrapper, true);
+      markIframePlaying(iframeElement, true);
+    } else {
+      if (wrapper) {
+        setPosterVisibility(wrapper, true);
+      }
+      markIframePlaying(iframeElement, true);
     }
   };
 
@@ -1529,8 +1550,12 @@ function initvideolider4() {
         { once: true }
       );
       iframeElement.src = targetSrc;
-    } else if (targetSrc) {
-      iframeElement.src = targetSrc;
+      markIframePlaying(iframeElement, false);
+    } else {
+      if (targetSrc) {
+        iframeElement.src = targetSrc;
+      }
+      markIframePlaying(iframeElement, false);
     }
   };
 
