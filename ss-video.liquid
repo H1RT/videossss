@@ -1414,6 +1414,7 @@ function initvideolider4() {
   };
 
   preloadPosterImages();
+  window.addEventListener('load', preloadPosterImages, { once: true });
 
   const slider = new Swiper(`.video-slider-slider-{{ section.id }}`, {
     speed: 300,
@@ -1440,6 +1441,7 @@ function initvideolider4() {
     on: {
       init: function() {
         // Автоплей при инициализации
+        preloadPosterImages();
         if ({{ center_video_autoplay }}) {
           setTimeout(() => {
             handleCenterSlideAutoplay(this);
@@ -1492,9 +1494,6 @@ function initvideolider4() {
     }
   };
 
-  const isVideoPlaying = (videoEl) => videoEl && !videoEl.paused && !videoEl.ended && videoEl.readyState > 2;
-  const isIframePlaying = (iframeEl) => iframeEl && iframeEl.dataset.playing === 'true';
-
   const pauseSlideMedia = (slide) => {
     if (!slide) return;
     const slideVideo = slide.querySelector('video');
@@ -1523,11 +1522,7 @@ function initvideolider4() {
   const stopOtherMedia = (currentSlide) => {
     getSlides().forEach((otherSlide) => {
       if (otherSlide === currentSlide) return;
-      const videoEl = otherSlide.querySelector('video');
-      const iframeEl = otherSlide.querySelector('iframe');
-      if (isVideoPlaying(videoEl) || isIframePlaying(iframeEl)) {
-        pauseSlideMedia(otherSlide);
-      }
+      pauseSlideMedia(otherSlide);
     });
   };
 
