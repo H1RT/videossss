@@ -1478,6 +1478,23 @@ function initvideolider4() {
     iframeEl.dataset.playing = isPlaying ? 'true' : 'false';
   };
 
+  const pauseIframe = (iframeEl) => {
+    if (!iframeEl) return;
+    const src = (iframeEl.getAttribute('src') || '').toLowerCase();
+    try {
+      if (src.includes('youtube.com')) {
+        iframeEl.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+      } else if (src.includes('vimeo.com')) {
+        iframeEl.contentWindow?.postMessage('{"method":"pause"}', '*');
+      }
+    } catch (e) {
+      // ignore cross-origin issues and fall back to src reset below
+    }
+  };
+
+  const isVideoPlaying = (videoEl) => videoEl && !videoEl.paused && !videoEl.ended && videoEl.readyState > 2;
+  const isIframePlaying = (iframeEl) => iframeEl && iframeEl.dataset.playing === 'true';
+
   const pauseSlideMedia = (slide) => {
     if (!slide) return;
     const slideVideo = slide.querySelector('video');
@@ -1491,6 +1508,7 @@ function initvideolider4() {
     }
 
     if (slideIframe) {
+      pauseIframe(slideIframe);
       resetIframePlayback(slideIframe, slideIframe.getAttribute('data-src1'), slideWrapper);
       markIframePlaying(slideIframe, false);
     }
@@ -1505,9 +1523,24 @@ function initvideolider4() {
   const stopOtherMedia = (currentSlide) => {
     getSlides().forEach((otherSlide) => {
       if (otherSlide === currentSlide) return;
-      pauseSlideMedia(otherSlide);
+      const videoEl = otherSlide.querySelector('video');
+      const iframeEl = otherSlide.querySelector('iframe');
+      if (isVideoPlaying(videoEl) || isIframePlaying(iframeEl)) {
+        pauseSlideMedia(otherSlide);
+      }
     });
   };
+
+  document.addEventListener(
+    'play',
+    (event) => {
+      const slide = event.target?.closest(`.video-slider-slide-{{ section.id }}`);
+      if (slide) {
+        stopOtherMedia(slide);
+      }
+    },
+    true
+  );
 
   const startIframePlayback = (iframeElement, targetSrc, wrapper) => {
     if (!iframeElement) return;
@@ -1606,7 +1639,6 @@ function initvideolider4() {
               video.play();
             }
             if (iframeElement) {
-              stopOtherMedia(item);
               startIframePlayback(iframeElement, iframeElement.getAttribute('data-src2'), slideWrapper);
             }
           } else {
