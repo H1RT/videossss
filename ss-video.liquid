@@ -1579,6 +1579,7 @@ function initvideolider4() {
     if (video) {
       video.muted = false;
       video.removeAttribute('muted');
+      video.addEventListener('play', () => stopOtherMedia(item));
     }
 
     if(video || iframeElement) {
