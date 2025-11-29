@@ -1478,13 +1478,6 @@ function initvideolider4() {
     iframeEl.dataset.playing = isPlaying ? 'true' : 'false';
   };
 
-  const isVideoPlaying = (videoEl) => {
-    if (!videoEl) return false;
-    return videoEl.currentTime > 0 && !videoEl.paused && !videoEl.ended;
-  };
-
-  const isIframePlaying = (iframeEl) => iframeEl?.dataset.playing === 'true';
-
   const pauseSlideMedia = (slide) => {
     if (!slide) return;
     const slideVideo = slide.querySelector('video');
@@ -1512,12 +1505,7 @@ function initvideolider4() {
   const stopOtherMedia = (currentSlide) => {
     getSlides().forEach((otherSlide) => {
       if (otherSlide === currentSlide) return;
-
-      const otherVideo = otherSlide.querySelector('video');
-      const otherIframe = otherSlide.querySelector('iframe');
-      if (isVideoPlaying(otherVideo) || isIframePlaying(otherIframe)) {
-        pauseSlideMedia(otherSlide);
-      }
+      pauseSlideMedia(otherSlide);
     });
   };
 
