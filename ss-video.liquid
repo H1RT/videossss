@@ -1455,7 +1455,7 @@ function initvideolider4() {
     }
   });
 
-  const videoItems = document.querySelectorAll(`.video-slider-slide-{{ section.id }}`);
+  const getSlides = () => Array.from(document.querySelectorAll(`.video-slider-slide-{{ section.id }}`));
   const centerAutoplay = {{ center_video_autoplay }};
   const setPosterVisibility = (wrapper, hidePoster) => {
     if (!wrapper) return;
@@ -1497,7 +1497,7 @@ function initvideolider4() {
   };
 
   const stopOtherMedia = (currentSlide) => {
-    videoItems.forEach((otherSlide) => {
+    getSlides().forEach((otherSlide) => {
       if (otherSlide !== currentSlide) {
         pauseSlideMedia(otherSlide);
       }
@@ -1567,7 +1567,7 @@ function initvideolider4() {
     }
   }
 
-  videoItems.forEach((item) => {
+  getSlides().forEach((item) => {
     const video = item.querySelector('video');
     const iframeElement = item.querySelector('iframe');
     const videoButton = item.querySelector(`.video-slider-action-{{ section.id }}`);
@@ -1579,7 +1579,9 @@ function initvideolider4() {
     if (video) {
       video.muted = false;
       video.removeAttribute('muted');
-      video.addEventListener('play', () => stopOtherMedia(item));
+      ['play', 'playing'].forEach((evt) => {
+        video.addEventListener(evt, () => stopOtherMedia(item));
+      });
     }
 
     if(video || iframeElement) {
@@ -1595,6 +1597,7 @@ function initvideolider4() {
               startIframePlayback(iframeElement, iframeElement.getAttribute('data-src2'), slideWrapper);
             }
           } else {
+            stopOtherMedia(item);
             if (video) {
               video.pause();
             }
